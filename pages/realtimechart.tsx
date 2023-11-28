@@ -41,7 +41,7 @@ export default function Realtimechart(){
         <div className="basis-[33%]"></div>
       </div>
         <div className="mt-[50px]"> 
-        <Iframe url="http://54.157.207.178:3200/"
+        <Iframe url="https://bw07.kaatru.org/"
         width="90%"
         height="100%"  
         id=""
