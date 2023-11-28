@@ -238,7 +238,7 @@ function Charts() {
       } else {
         reqData = await axios
             .get(
-                `http://localhost:3200/stale/filter?devices=${queryDevices}&filter=${time}`,
+                `https://bw07.kaatru.org/stale/filter?devices=${queryDevices}&filter=${time}`,
 
             )
             .then((value) => value.data);
