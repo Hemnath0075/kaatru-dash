@@ -194,6 +194,7 @@ const handleSelectChange = (newValue: any) => {
 };
 const parametersRef = useRef<Select | null>(null);
   const [data,setData]=useState(deviceList);
+  const [data2,setData2]=useState(deviceList);
   const getSocketUrl = useCallback(() => {
     return new Promise<string>((resolve) => {
       setTimeout(() => {

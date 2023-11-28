@@ -6,7 +6,7 @@ import useWebSocket from 'react-use-websocket';
 import Select from 'react-select';
 import SearchIcon from '../public/icons8-search.svg';
 import Image from 'next/image';
-import {deviceList} from '../data/deviceList';
+import {co2, deviceList} from '../data/deviceList';
 import {eighteenthCol, eigthCol, eleventhCol, fifteenthCol, fifthCol, fourteenthCol, fourthCol, lowerFirstCol, lowerLastCol, ninteenthCol, ninthCol, secondCol, seventeenthCol, seventhCol, sixteenthCol, sixthCol, tenthCol, thirdCol, thirteenthCol, twelvethCol, twentythCol, upperFirstCol, upperLastCol} from '../data/gridView';
 import {defaultParameters} from '../data/deviceList';
 // import Navbar from '@/components/Navbar';
@@ -93,6 +93,7 @@ export default function Home() {
     desc: string;
   };
   const [parameters,SetParameters]=useState<ParameterOption[]>(defaultParameters);
+  const [parameters2,SetParameters2]=useState<ParameterOption[]>(co2);
   // //console.log("the parameters that has been selected are ",parameters)
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -110,6 +111,17 @@ export default function Home() {
     'sNoxI', 'aFanTacho', 'pIDar',  'aUT',   'ax',
     'ay',    'az',        'gx',    'gy',
     'gz',    'accTemp'
+  ]);
+  const [paramsArr2, setParamsArr2] = useState<Array<string>>([       'rHeap', 'lHeap',
+    'dTS',   'dUT',       'lat',   'nso',
+    'long',  'ewo',       'alt',   'sog',
+    'cog',   'hdop',
+   'temp',      'rh',    'sPM1',
+    'sPM2',  'sPM4',      'sPM10', 'sNPMp5',
+    'sNPM1', 'sNPM2',     'sNPM4', 'sNPM10',
+    'sTPS',  'sTemp',     'sRh',   'sVocI',
+    'sNoxI', 'aFanTacho','scd30Co2','scd30Temp', 'scd30Hum','k30Co2','sunriseCo2','pIDar',  'aUT',
+     'accTemp'
   ]);
   const handleOk = () => {
     // const value = parametersRef?.current?.commonProps?.selectProps?.value ?? [];
@@ -187,6 +199,13 @@ const parametersRef = useRef<Select | null>(null);
       }, 2000);
     });
   }, []);
+  const getSocketUrlCO2 = useCallback(() => {
+    return new Promise<string>((resolve) => {
+      setTimeout(() => {
+        resolve('wss://bw07.kaatru.org/co2');
+      }, 2000);
+    });
+  }, []);
   const changeIndex =(e:any)=>{
     console.log(e)
 
@@ -260,6 +279,25 @@ const parametersRef = useRef<Select | null>(null);
     },
     shouldReconnect: (_closeEvent) => true,
   });
+  const {} = useWebSocket(getSocketUrlCO2, {
+    onOpen: (_data) => {
+      //console.log('WebSocket connection established.');
+    },
+    onMessage: (response) => {
+      const mes = JSON.parse(response.data);
+      //console.log(mes);
+      
+      data.map((item)=>{
+        if(item.dID==mes.dID){
+          item.value=mes;
+          item.lts = Date.now();
+        }
+      });
+      // //console.log(data);
+    },
+    shouldReconnect: (_closeEvent) => true,
+  });
+  console.log(data)
   // //console.log(data);
   // console.log(data);
   useEffect(()=>{
@@ -285,15 +323,15 @@ const parametersRef = useRef<Select | null>(null);
       }   
       data?.map((item:DataItem)=>{
         if(item.lts > currentTs){
-          if(/\b(SG)\d+\b/.test(item?.dID)){
+          if(/\b(SG)\d+\b/.test(item?.dID) || /\b(MG)\d+\b/.test(item?.dID)){
             activeStationary+=1;
             item.status = true;
           }
-          else if (/\b(MG)\d+\b/.test(item?.dID)){
+          else if (/\b(SZTest)\d+\b/.test(item?.dID)){
             activeMobile+=1;
             item.status = true;
           }
-          else if (/\b(LMG)\d+\b/.test(item?.dID)){
+          else if (/\b(BCo)\d+\b/.test(item?.dID)){
             activeLeftMirror+=1;
             item.status = true;
           }
@@ -318,7 +356,7 @@ const parametersRef = useRef<Select | null>(null);
     switch(val){
       case 1:
         // //console.log(data);
-        let filteredData1 = data.filter((item)=>item.status===true && /\b(SG)\d+\b/.test(item?.dID))
+        let filteredData1 = data.filter((item)=>item.status===true && ((/\b(SG)\d+\b/).test(item?.dID)||(/\b(MG)\d+\b/).test(item?.dID)))
         //console.log(filteredData1.length)
         setFilteredData(filteredData1)
         filteredData1.length > 15 ? setIsNextThere(true) : setIsNextThere(false);
@@ -326,7 +364,7 @@ const parametersRef = useRef<Select | null>(null);
         break;
       case 2:
         // //console.log(data);
-        let filteredData2 = data.filter((item)=>item.status===false && /\b(SG)\d+\b/.test(item?.dID))
+        let filteredData2 = data.filter((item)=>item.status===false && ((/\b(SG)\d+\b/).test(item?.dID)||(/\b(MG)\d+\b/).test(item?.dID)))
         //console.log(filteredData2)
         filteredData2.length > 15 ? setIsNextThere(true) : setIsNextThere(false);
         setFilteredData(filteredData2)
@@ -334,7 +372,7 @@ const parametersRef = useRef<Select | null>(null);
         break;
       case 3:
         // //console.log(data);
-        let filteredData3 = data.filter((item)=>item.status===true && /\b(MG)\d+\b/.test(item?.dID))
+        let filteredData3 = data.filter((item)=>item.status===true && /\b(SZTest)\d+\b/.test(item?.dID))
         //console.log(filteredData3)
         filteredData3.length > 15 ? setIsNextThere(true) : setIsNextThere(false);
         setFilteredData(filteredData3)
@@ -342,7 +380,7 @@ const parametersRef = useRef<Select | null>(null);
         break;
       case 4:
         // //console.log(data);
-        let filteredData4 = data.filter((item)=>item.status===false && /\b(MG)\d+\b/.test(item?.dID))
+        let filteredData4 = data.filter((item)=>item.status===false && /\b(SZTest)\d+\b/.test(item?.dID))
         //console.log(filteredData4)
         filteredData4.length > 15 ? setIsNextThere(true) : setIsNextThere(false);
         setFilteredData(filteredData4)
@@ -350,7 +388,7 @@ const parametersRef = useRef<Select | null>(null);
         break;
       case 5:
         // //console.log(data);
-        let filteredData5 = data.filter((item)=>item.status===true && /\b(LMG)\d+\b/.test(item?.dID))
+        let filteredData5 = data.filter((item)=>item.status===true && /\b(BCo)\d+\b/.test(item?.dID))
         //console.log(filteredData5)
         filteredData5.length > 15 ? setIsNextThere(true) : setIsNextThere(false);
         setFilteredData(filteredData5)
@@ -358,7 +396,7 @@ const parametersRef = useRef<Select | null>(null);
         break;
       case 6:
         // //console.log(data);
-        let filteredData6 = data.filter((item)=>item.status===false && /\b(LMG)\d+\b/.test(item?.dID))
+        let filteredData6 = data.filter((item)=>item.status===false && /\b(Bco)\d+\b/.test(item?.dID))
         //console.log(filteredData6)
         filteredData6.length > 15 ? setIsNextThere(true) : setIsNextThere(false);
         setFilteredData(filteredData6)
@@ -512,36 +550,36 @@ const parametersRef = useRef<Select | null>(null);
         <div className="basis-[100%] w-full flex flex-row gap-4 mx-2 text-white">
           <div className="basis-[33.3%] bg-slate-400 h-[12vh] rounded-md flex flex-col justify-evenly">
             <div className="flex justify-center items-center">
-              <p>Stationary {sCount}/97</p>
+              <p>IITM GURGUGRAM DEVICES {sCount}/10</p>
             </div>
             <div className="w-full flex flex-row justify-evenly items-center gap-4 px-2">
                 <button className={`border-2 py-[1vh] px-2 rounded-md cursor-pointer flex-auto ${activeButton==1?'bg-orange-300 flex flex-row justify-between items-center':''}`} onClick={()=>{if(activeButton!==1){setActiveButton(1);setDataOnFilter(1)}}}>{(activeButton==1) && <span><FcPrevious className={`${isPrevThere?'block':'hidden'}`} onClick={goPrevFilteredData}/></span>}Active ({sCount}){(activeButton==1) && <span><FcNext className={`${isNextThere?'block':'hidden'}`} onClick={goNextFilteredData}/></span>}</button>
-                <button className={`border-2 py-[1vh] px-2 rounded-md cursor-pointer flex-auto ${activeButton==2?'bg-orange-300 flex flex-row justify-between items-center':''}`} onClick={()=>{if(activeButton!==2){setActiveButton(2);setDataOnFilter(2)}}}>{(activeButton==2) && <span><FcPrevious className={`${isPrevThere?'block':'hidden'}`} onClick={goPrevFilteredData}/></span>}InActive ({97-sCount}){(activeButton==2) && <span><FcNext className={`${isNextThere?'block':'hidden'}`} onClick={goNextFilteredData}/></span>}</button>
+                <button className={`border-2 py-[1vh] px-2 rounded-md cursor-pointer flex-auto ${activeButton==2?'bg-orange-300 flex flex-row justify-between items-center':''}`} onClick={()=>{if(activeButton!==2){setActiveButton(2);setDataOnFilter(2)}}}>{(activeButton==2) && <span><FcPrevious className={`${isPrevThere?'block':'hidden'}`} onClick={goPrevFilteredData}/></span>}InActive ({10-sCount}){(activeButton==2) && <span><FcNext className={`${isNextThere?'block':'hidden'}`} onClick={goNextFilteredData}/></span>}</button>
             </div>
           </div>
           <div className="basis-[33.3%] bg-slate-400 h-[12vh] rounded-md flex flex-col justify-evenly">
             <div className="flex justify-center items-center">
-              <p>Mobile {mCount}/63</p>
+              <p>ZANZIBAR DEVICES {mCount}/5</p>
             </div>
             <div className="w-full flex flex-row justify-evenly items-center gap-4 px-2">
                 <button className={`border-2 py-[1vh] px-2 rounded-md cursor-pointer flex-auto ${activeButton==3?'bg-orange-300 flex flex-row justify-between items-center':''}`} onClick={()=>{if(activeButton!==3){setActiveButton(3);setDataOnFilter(3)}}}>{(activeButton==3) && <span><FcPrevious className={`${isPrevThere?'block':'hidden'}`} onClick={goPrevFilteredData}/></span>}Active ({mCount}){(activeButton==3) && <span><FcNext className={`${isNextThere?'block':'hidden'}`} onClick={goNextFilteredData}/></span>}</button>
-                <button className={`border-2 py-[1vh] px-2 rounded-md cursor-pointer flex-auto ${activeButton==4?'bg-orange-300 flex flex-row justify-between items-center':''}`} onClick={()=>{if(activeButton!==4){setActiveButton(4);setDataOnFilter(4)}}}>{(activeButton==4) && <span><FcPrevious className={`${isPrevThere?'block':'hidden'}`} onClick={goPrevFilteredData}/></span>}InActive ({63-mCount}){(activeButton==4) && <span><FcNext className={`${isNextThere?'block':'hidden'}`} onClick={goNextFilteredData}/></span>}</button>
+                <button className={`border-2 py-[1vh] px-2 rounded-md cursor-pointer flex-auto ${activeButton==4?'bg-orange-300 flex flex-row justify-between items-center':''}`} onClick={()=>{if(activeButton!==4){setActiveButton(4);setDataOnFilter(4)}}}>{(activeButton==4) && <span><FcPrevious className={`${isPrevThere?'block':'hidden'}`} onClick={goPrevFilteredData}/></span>}InActive ({5-mCount}){(activeButton==4) && <span><FcNext className={`${isNextThere?'block':'hidden'}`} onClick={goNextFilteredData}/></span>}</button>
             </div>
           </div>
           <div className="basis-[33.3%] bg-slate-400 h-[12vh] rounded-md flex flex-col justify-evenly">
             <div className="flex justify-center items-center">
-              <p>Left Mirror {lmCount}/45</p>
+              <p>INDOOR DEVICES {lmCount}/45</p>
             </div>
             <div className="w-full flex flex-row justify-evenly items-center gap-4 px-2">
                 <button className={`border-2 py-[1vh] px-2 rounded-md cursor-pointer flex-auto ${activeButton==5?'bg-orange-300 flex flex-row justify-between items-center':''}`} onClick={()=>{if(activeButton!==5){setActiveButton(5);setDataOnFilter(5)}}}>{(activeButton==5) && <span><FcPrevious className={`${isPrevThere?'block':'hidden'}`} onClick={goPrevFilteredData}/></span>}Active ({lmCount}){(activeButton==5) && <span><FcNext className={`${isNextThere?'block':'hidden'}`} onClick={goNextFilteredData}/></span>}</button>
-                <button className={`border-2 py-[1vh] px-2 rounded-md cursor-pointer flex-auto ${activeButton==6?'bg-orange-300 flex flex-row justify-between items-center':''}`} onClick={()=>{if(activeButton!==6){setActiveButton(6);setDataOnFilter(6)}}}>{(activeButton==6) && <span><FcPrevious className={`${isPrevThere?'block':'hidden'}`} onClick={goPrevFilteredData}/></span>}InActive ({45-lmCount}){(activeButton==6) && <span><FcNext className={`${isNextThere?'block':'hidden'}`} onClick={goNextFilteredData}/></span>}</button>
+                <button className={`border-2 py-[1vh] px-2 rounded-md cursor-pointer flex-auto ${activeButton==6?'bg-orange-300 flex flex-row justify-between items-center':''}`} onClick={()=>{if(activeButton!==6){setActiveButton(6);setDataOnFilter(6)}}}>{(activeButton==6) && <span><FcPrevious className={`${isPrevThere?'block':'hidden'}`} onClick={goPrevFilteredData}/></span>}InActive ({2-lmCount}){(activeButton==6) && <span><FcNext className={`${isNextThere?'block':'hidden'}`} onClick={goNextFilteredData}/></span>}</button>
             </div>
           </div>
         </div>
       </div>
       <div className="w-full h-full mt-[21vh]">
       <Spin tip="Loading..." spinning={isLoading}>
-        <table>
+        {!((activeButton===5)||activeButton===6) &&<table>
           <tbody>
           <tr className='table_row'>
           <th className='fixed bg-white'>dID</th>  
@@ -614,10 +652,89 @@ const parametersRef = useRef<Select | null>(null);
                 
                 </tr>  
               )
-            })}  
+            })} 
+             
           
           </tbody>
-        </table>    
+        </table>}   
+        {(activeButton===5 || activeButton===6) &&<table>
+          <tbody>
+          <tr className='table_row'>
+          <th className='fixed bg-white'>dID</th>  
+          <th className='ml-[104px]'>pID</th>  
+            {parameters2.map((item)=>{
+              return(
+                <Tooltip title={item?.desc} key={item.value}>
+                  <th key={item.value}>{item?.value}</th> 
+                </Tooltip>
+              )
+            })}
+          </tr>   
+            {currentPage.map((item)=>{
+              return (
+                <tr key={item.dID} className={`values`}>
+                <td className={`fixed ${item.status ? 'bg-white':'bg-red-500'}`}>{item.dID}</td>
+                <td className='ml-[104px]'>{(item?.value as unknown as { pID: string | undefined })?.pID}</td>
+                {paramsArr2.map((item1)=>{
+                  //console.log(item1);
+                  return(
+                    <>
+                {item1?.includes('rHeap') && <td>{(item?.value as unknown as { rHeap: string | undefined })?.rHeap}</td>}
+                {/\b(lHeap)\b/.test(item1) && <td>{(item?.value as unknown as { lHeap: string | undefined })?.lHeap}</td>}
+                {item1?.includes('dTS') && <td>{(item?.value as unknown as { dTS: string | undefined })?.dTS}</td>}
+                {item1?.includes('dUT') && <td>{(item?.value as unknown as { dUT: string | undefined })?.dUT}</td>}
+                {/* <td>{item.value?.dTS}</td> */}
+                {item1?.includes('lat') && <td>{(item?.value as unknown as { lat: string | undefined })?.lat}</td>}
+                {item1?.includes('nso') && <td>{(item?.value as unknown as { nso: string | undefined })?.nso}</td>}
+                {item1?.includes('long') && <td>{(item?.value as unknown as { long: string | undefined })?.long}</td>}
+                {item1?.includes('ewo') && <td>{(item?.value as unknown as { ewo: string | undefined })?.ewo}</td>}
+                {item1?.includes('alt') && <td>{(item?.value as unknown as { alt: string | undefined })?.alt}</td>}
+                {/\b(sog)\b/.test(item1) && <td>{(item?.value as unknown as { sog: string | undefined })?.sog}</td>}
+                {/\b(cog)\b/.test(item1) && <td>{(item?.value as unknown as { cog: string | undefined })?.cog}</td>}
+                {/\b(hdop)\b/.test(item1) && <td>{(item?.value as unknown as { hdop: string | undefined })?.hdop}</td>}
+                {/* {item1?.includes('vdop') && <td>{(item?.value as unknown as { vdop: string | undefined })?.vdop}</td>} */}
+                {/* {item1?.includes('pdop') && <td>{(item?.value as unknown as { pdop: string | undefined })?.pdop}</td>} */}
+                {/* {item1?.includes('age') && <td>{(item?.value as unknown as { age: string | undefined })?.age}</td>} */}
+                {/\b(temp)\b/.test(item1) && <td>{(item?.value as unknown as { temp: string | undefined })?.temp}</td>}
+                {/\b(rh)\b/.test(item1) && <td>{(item?.value as unknown as { rh: string | undefined })?.rh}</td>}
+                {/\b(sPM1)\b/.test(item1) && <td>{(item?.value as unknown as { sPM1: string | undefined })?.sPM1}</td>}
+                {/\b(sPM2)\b/.test(item1) && <td>{(item?.value as unknown as { sPM2: string | undefined })?.sPM2}</td>}
+                {/\b(sPM4)\b/.test(item1) && <td>{(item?.value as unknown as { sPM4: string | undefined })?.sPM4}</td>}
+                {/\b(sPM10)\b/.test(item1) && <td>{(item?.value as unknown as { sPM10: string | undefined })?.sPM10}</td>}
+                {/\b(sNPMp5)\b/.test(item1) && <td>{(item?.value as unknown as { sNPMp5: string | undefined })?.sNPMp5}</td>}
+                {/\b(sNPM1)\b/.test(item1) && <td>{(item?.value as unknown as { sNPM1: string | undefined })?.sNPM1}</td>}
+                {item1?.includes('sNPM2') && <td>{(item?.value as unknown as { sNPM2: string | undefined })?.sNPM2}</td>}
+                {item1?.includes('sNPM4') && <td>{(item?.value as unknown as { sNPM4: string | undefined })?.sNPM4}</td>}
+                {/\b(sNPM10)\b/.test(item1) && <td>{(item?.value as unknown as { sNPM10: string | undefined })?.sNPM10}</td>}
+                {item1?.includes('sTPS') && <td>{(item?.value as unknown as { sTPS: string | undefined })?.sTPS}</td>}
+                {item1?.includes('sTemp') && <td>{(item?.value as unknown as { sTemp: string | undefined })?.sTemp}</td>}
+                {item1?.includes('sRh') && <td>{(item?.value as unknown as { sRh: string | undefined })?.sRh}</td>}
+                {item1?.includes('sVocI') && <td>{(item?.value as unknown as { sVocI: string | undefined })?.sVocI}</td>}
+                {item1?.includes('sNoxI') && <td>{(item?.value as unknown as { sNoxI: string | undefined })?.sNoxI}</td>}
+                {item1?.includes('aFanTacho') && <td>{(item?.value as unknown as { aFanTacho: string | undefined })?.aFanTacho}</td>}
+                {item1?.includes('scd30Co2') && <td>{(item?.value as unknown as { scd30Co2: string | undefined })?.scd30Co2}</td>}
+                {item1?.includes('scd30Temp') && <td>{(item?.value as unknown as { scd30Temp: string | undefined })?.scd30Temp}</td>}
+                {item1?.includes('scd30Hum') && <td>{(item?.value as unknown as { scd30Hum: string | undefined })?.scd30Hum}</td>}
+                {item1?.includes('k30Co2') && <td>{(item?.value as unknown as { k30Co2: string | undefined })?.k30Co2}</td>}
+                {item1?.includes('sunriseCo2') && <td>{(item?.value as unknown as { sunriseCo2: string | undefined })?.sunriseCo2}</td>}
+                {/* {item1?.includes('gIR') && <td>{(item?.value as unknown as { gIR: string | undefined })?.gIR}</td>} */}
+                {/* {item1?.includes('gLUM') && <td>{(item?.value as unknown as { gLUM: string | undefined })?.gLUM}</td>} */}
+                {/* {item1?.includes('gUV') && <td>{(item?.value as unknown as { gUV: string | undefined })?.gUV}</td>} */}
+                {item1?.includes('pIDar') && <td>{(item?.value as unknown as { pIDar: string | undefined })?.pIDar}</td>}
+                {item1?.includes('aUT') && <td>{(item?.value as unknown as { aUT: string | undefined })?.aUT}</td>}
+                {item1?.includes('accTemp') && <td>{(item?.value as unknown as { accTemp: string | undefined })?.accTemp}</td>}
+                    </>
+                  )
+                  })}
+                
+                </tr>  
+              )
+            })} 
+             
+          
+          </tbody>
+        </table>}   
+         
         </Spin>
       </div></>}
       <ToastContainer />
