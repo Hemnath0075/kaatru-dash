@@ -327,7 +327,7 @@ const parametersRef = useRef<Select | null>(null);
             activeStationary+=1;
             item.status = true;
           }
-          else if (/\b(SZTest)\d+\b/.test(item?.dID)){
+          else if (/\b(SZTestS)\d+\b/.test(item?.dID) || /\b(SZTest)\d+\b/.test(item?.dID)){
             activeMobile+=1;
             item.status = true;
           }
@@ -372,7 +372,7 @@ const parametersRef = useRef<Select | null>(null);
         break;
       case 3:
         // //console.log(data);
-        let filteredData3 = data.filter((item)=>item.status===true && /\b(SZTest)\d+\b/.test(item?.dID))
+        let filteredData3 = data.filter((item)=>item.status===true && (/\b(SZTestS)\d+\b/.test(item?.dID)||/\b(SZTest)\d+\b/.test(item?.dID)))
         //console.log(filteredData3)
         filteredData3.length > 15 ? setIsNextThere(true) : setIsNextThere(false);
         setFilteredData(filteredData3)
@@ -380,7 +380,7 @@ const parametersRef = useRef<Select | null>(null);
         break;
       case 4:
         // //console.log(data);
-        let filteredData4 = data.filter((item)=>item.status===false && /\b(SZTest)\d+\b/.test(item?.dID))
+        let filteredData4 = data.filter((item)=>item.status===false && (/\b(SZTestS)\d+\b/.test(item?.dID)||/\b(SZTest)\d+\b/.test(item?.dID)))
         //console.log(filteredData4)
         filteredData4.length > 15 ? setIsNextThere(true) : setIsNextThere(false);
         setFilteredData(filteredData4)
@@ -524,8 +524,8 @@ const parametersRef = useRef<Select | null>(null);
             <div className="flex flex-row gap-3">
             <Link href="/" onClick={()=>setIsTableView(true)}>Home</Link>
             <Link href="/charts">Charts</Link>
-            <Link href="/realtimechart">Realtime Charts</Link>
-            <p className='w-[140px] cursor-pointer' onClick={()=>{setIsTableView(false);router.push('/allDevices')}}>Grid View</p>
+            <Link href="/realtimechart" className='w-40'>Realtime Charts</Link>
+            
             </div>
         </div>
         <div className=""><h1 className='text-2xl'>COLLOCATION</h1></div>
@@ -534,11 +534,7 @@ const parametersRef = useRef<Select | null>(null);
           <div className="">
             <button className='bg-blue-400 px-2 py-2 text-white border-black rounded-md' onClick={()=>showModal()}>Parameters Filter</button>
           </div>
-          <Select
-          defaultValue={selectedOption}
-          onChange={(value)=>changeIndex(value)}
-          options={options}
-          />
+          
         <div className="relative">
           <input type="text" className='w-[90%] ml-4 text-lg input_field px-1 py-1' placeholder='Enter Device IDs' ref={inputRef}/>
           <Image src={SearchIcon} alt="" className='absolute top-1 right-2 cursor-pointer' width={30} onClick={searchDevices}/>
@@ -559,7 +555,7 @@ const parametersRef = useRef<Select | null>(null);
           </div>
           <div className="basis-[33.3%] bg-slate-400 h-[12vh] rounded-md flex flex-col justify-evenly">
             <div className="flex justify-center items-center">
-              <p>ZANZIBAR DEVICES {mCount}/5</p>
+              <p>ZANZIBAR DEVICES {mCount}/4</p>
             </div>
             <div className="w-full flex flex-row justify-evenly items-center gap-4 px-2">
                 <button className={`border-2 py-[1vh] px-2 rounded-md cursor-pointer flex-auto ${activeButton==3?'bg-orange-300 flex flex-row justify-between items-center':''}`} onClick={()=>{if(activeButton!==3){setActiveButton(3);setDataOnFilter(3)}}}>{(activeButton==3) && <span><FcPrevious className={`${isPrevThere?'block':'hidden'}`} onClick={goPrevFilteredData}/></span>}Active ({mCount}){(activeButton==3) && <span><FcNext className={`${isNextThere?'block':'hidden'}`} onClick={goNextFilteredData}/></span>}</button>
@@ -568,7 +564,7 @@ const parametersRef = useRef<Select | null>(null);
           </div>
           <div className="basis-[33.3%] bg-slate-400 h-[12vh] rounded-md flex flex-col justify-evenly">
             <div className="flex justify-center items-center">
-              <p>INDOOR DEVICES {lmCount}/45</p>
+              <p>INDOOR DEVICES {lmCount}/2</p>
             </div>
             <div className="w-full flex flex-row justify-evenly items-center gap-4 px-2">
                 <button className={`border-2 py-[1vh] px-2 rounded-md cursor-pointer flex-auto ${activeButton==5?'bg-orange-300 flex flex-row justify-between items-center':''}`} onClick={()=>{if(activeButton!==5){setActiveButton(5);setDataOnFilter(5)}}}>{(activeButton==5) && <span><FcPrevious className={`${isPrevThere?'block':'hidden'}`} onClick={goPrevFilteredData}/></span>}Active ({lmCount}){(activeButton==5) && <span><FcNext className={`${isNextThere?'block':'hidden'}`} onClick={goNextFilteredData}/></span>}</button>

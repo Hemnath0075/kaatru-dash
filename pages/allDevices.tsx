@@ -889,7 +889,7 @@ const parametersRef = useRef<Select | null>(null);
             <div className="flex flex-row gap-3">
             <Link href="/" onClick={()=>setIsTableView(true)}>Home</Link>
             <Link href="/charts">Charts</Link>
-            <p className='w-[140px] cursor-pointer' onClick={()=>{setIsTableView(false);router.push('/allDevices')}}>Grid View</p>
+            
             </div>
         </div>
         <div className=""><h1 className='text-2xl'>COLOCATION</h1></div>

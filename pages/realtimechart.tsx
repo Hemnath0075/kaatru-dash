@@ -28,7 +28,7 @@ export default function Realtimechart(){
             <p className='cursor-pointer px-2 py-2 border-black' onClick={()=>router.push("/")}>Home</p>  
             <p className='cursor-pointer px-2 py-2 border-black' onClick={()=>router.push("/charts")}>Charts</p>  
             <p className='cursor-pointer px-2 py-2 border-black' onClick={()=>router.push("/realtimechart")}>Realtime Chart</p>  
-            <p className='cursor-pointer px-2 py-2 border-black' onClick={()=>router.push("/allDevices")}>Grid View</p>  
+            
         </div>
       </Drawer>
         <div className="flex flex-row gap-[15%] basis-[33%]">

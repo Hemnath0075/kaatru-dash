@@ -75,7 +75,7 @@ function Charts() {
     devicesArr?.map((item,index)=>{
       selectedDeviceData.push({deviceId:item,color:colors[index]})
     })
-    setSelectedDevices(devicesArr);
+    
     getChartData('15M',devicesArr);
     setTimeFrame('15M') 
    }
@@ -121,6 +121,7 @@ function Charts() {
     getChartData('15M',multipleArr);
     setTimeFrame('15M') 
    }
+  console.log(selectedDevices);
   const inputRef1 = useRef<HTMLInputElement | null>(null);
   const inputRef2 = useRef<HTMLInputElement | null>(null);
   const [chartData, setChartData] = useState<any>();
@@ -222,6 +223,7 @@ function Charts() {
       //   console.log(timeArr);
       // }
       console.log(devices);
+      setSelectedDevices(devices);
       let devicesString = '';
       devices?.map((item:any) => {
         console.log(item)
@@ -236,7 +238,7 @@ function Charts() {
       } else {
         reqData = await axios
             .get(
-                `https://bw07.kaatru.org/stale/filter?devices=${queryDevices}&filter=${time}`,
+                `http://localhost:3200/stale/filter?devices=${queryDevices}&filter=${time}`,
 
             )
             .then((value) => value.data);
@@ -322,6 +324,7 @@ function Charts() {
       };
       setFinalMinMax(finalObj);
       console.log(finalMinMax);
+      console.log(chartData);
       // setMinMax()
       // console.log(reqData.data.data[0]);
       // dispatch(comparisonAddChartData(reqData.data));
@@ -360,6 +363,7 @@ function Charts() {
       setIsChartLoading(false);
     }
   };
+  console.log(chartData);
   const reachedMaximum = () =>{
     toast.error("You have already selected Maximum Number of Devices");
   }
@@ -409,6 +413,7 @@ function Charts() {
   const ChangeTimeFrame = (e:any) => {
     console.log(e.target.value);
     setTimeFrame(e.target.value);
+    console.log(selectedDeviceData);
     getChartData(e.target.value,selectedDevices);
     setIsChartLoading(true);
   };
