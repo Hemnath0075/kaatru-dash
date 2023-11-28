@@ -23,8 +23,7 @@ export const deviceList = [
     // { dID: 'SZTestS35', value: null ,lts: 0 ,status:false },
     { dID: 'SZTestS33', value: null ,lts: 0 ,status:false },
     { dID: 'SZTest1', value: null ,lts: 0 ,status:false },
-    { dID: 'BCo1', value: null ,lts: 0 ,status:false },
-    { dID: 'BCo2', value: null ,lts: 0 ,status:false },
+    
 ]
 
 export const CO2deviceList = [
